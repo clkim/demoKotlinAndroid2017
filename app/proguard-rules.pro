@@ -16,20 +16,22 @@
 #   public *;
 #}
 
-# Retrofit
--dontwarn retrofit2.**
--keep class retrofit2.** { *; }
+## Retrofit
+# Platform calls Class.forName on types which do not exist on Android to determine platform.
+-dontnote retrofit2.Platform
+# Platform used when running on Java 8 VMs. Will not be used at runtime.
+-dontwarn retrofit2.Platform$Java8
+# Retain generic type information for use by reflection by converters and adapters.
 -keepattributes Signature
+# Retain declared checked exceptions for use by a Proxy instance.
 -keepattributes Exceptions
+# Retrofit uses Okio under the hood
+## Okio
+-dontwarn okio.**
 
-# Picasso
+## Picasso
 -dontwarn com.squareup.okhttp.**
 
-# for: debug minifyEnabled true
+## for: debug minifyEnabled true
 #  seems needed for running instrumentated unit test; prevents lots of warnings, test-build failure: Execution failed for task ':app:transformClassesAndResourcesWithProguardForDebug'
 -dontwarn rx.**
--dontwarn okio.**
-#  these don't seem able to prevent more warnings, test-build failure: Execution failed for task ':app:transformClassesAndResourcesWithProguardForDebugAndroidTest'
-#-dontwarn android.support.**
-#-dontwarn android.support.test.runner.**
-#-dontwarn org.junit.**
