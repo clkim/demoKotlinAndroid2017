@@ -10,15 +10,16 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_album_search.*
 import net.gouline.dagger2demo.DemoApplication
 import net.gouline.dagger2demo.R
 import net.gouline.dagger2demo.rest.ITunesService
-import rx.Observable
-import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
-import rx.subscriptions.CompositeSubscription
+
 import javax.inject.Inject
 
 /**
@@ -60,7 +61,7 @@ class AlbumSearchActivity : AppCompatActivity(),
     private var mAlbumViewAdapter: AlbumViewAdapter? = null
 
     // composite subscription used to un-subscribe rx subscriptions
-    private var mCompositeSubscription: CompositeSubscription? = null
+    private var mCompositeSubscription: CompositeDisposable? = null
 
     // object with "static" member property used by Log.x
     companion object {
@@ -84,7 +85,7 @@ class AlbumSearchActivity : AppCompatActivity(),
         // Reference - http://blog.danlew.net/2014/10/08/grokking-rxjava-part-4/
         // we follow the pattern in above blog reference, although we have just one subscription in
         //  this demo app and un-subscribing from the subscription directly seemed to work ok too
-        mCompositeSubscription = CompositeSubscription()
+        mCompositeSubscription = CompositeDisposable()
 
         // if there is observable cached, use it to display album items from prior api call;
         //  tried checking instead for empty sequence in cached observable using
@@ -134,7 +135,7 @@ class AlbumSearchActivity : AppCompatActivity(),
 
     override fun onDestroy() {
         super.onDestroy()
-        mCompositeSubscription?.unsubscribe()
+        mCompositeSubscription?.dispose()
     }
 
     private fun fetchResults(term: String) {
@@ -144,7 +145,7 @@ class AlbumSearchActivity : AppCompatActivity(),
         DemoApplication.albumItemObservableCache =
                 // using the injected Retrofit service
                 mITunesService.search(term, "album")
-                        .flatMap { Observable.from(it.results) }
+                        .flatMap { Observable.fromIterable(it.results) }
                         .map { AlbumItem(it.collectionName, it.artworkUrl100) }
                         .subscribeOn(Schedulers.io())
                         .cache()
@@ -153,7 +154,7 @@ class AlbumSearchActivity : AppCompatActivity(),
 
     private fun displayCachedResults(cache: Observable<AlbumItem>) {
         // subscribe to the observable so as to display the album items
-        val subscription: Subscription = cache
+        val subscription: Disposable = cache
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         { mAlbumViewAdapter?.addAlbumItem(it)

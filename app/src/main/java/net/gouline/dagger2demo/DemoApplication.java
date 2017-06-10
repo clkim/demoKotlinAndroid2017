@@ -9,7 +9,7 @@ import net.gouline.dagger2demo.di.component.DaggerDemoApplicationComponent;
 import net.gouline.dagger2demo.di.component.DemoApplicationComponent;
 import net.gouline.dagger2demo.di.module.ApplicationModule;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 /**
  * Custom application definition.

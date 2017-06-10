@@ -4,7 +4,7 @@ import net.gouline.dagger2demo.model.ITunesResultSet;
 
 import retrofit2.http.GET;
 import retrofit2.http.Query;
-import rx.Observable;
+import io.reactivex.Observable;
 
 /**
  * iTunes service.
