@@ -10,7 +10,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import io.reactivex.Observable
+import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
@@ -145,14 +145,14 @@ class AlbumSearchActivity : AppCompatActivity(),
         DemoApplication.albumItemObservableCache =
                 // using the injected Retrofit service
                 mITunesService.search(term, "album")
-                        .flatMap { Observable.fromIterable(it.results) }
+                        .flatMap { Flowable.fromIterable(it.results) }
                         .map { AlbumItem(it.collectionName, it.artworkUrl100) }
                         .subscribeOn(Schedulers.io())
                         .cache()
         displayCachedResults(DemoApplication.albumItemObservableCache)
     }
 
-    private fun displayCachedResults(cache: Observable<AlbumItem>) {
+    private fun displayCachedResults(cache: Flowable<AlbumItem>) {
         // subscribe to the observable so as to display the album items
         val subscription: Disposable = cache
                 .observeOn(AndroidSchedulers.mainThread())

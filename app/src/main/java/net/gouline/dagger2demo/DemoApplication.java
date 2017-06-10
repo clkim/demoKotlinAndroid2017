@@ -9,7 +9,7 @@ import net.gouline.dagger2demo.di.component.DaggerDemoApplicationComponent;
 import net.gouline.dagger2demo.di.component.DemoApplicationComponent;
 import net.gouline.dagger2demo.di.module.ApplicationModule;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 
 /**
  * Custom application definition.
@@ -19,7 +19,7 @@ import io.reactivex.Observable;
 public class DemoApplication extends Application {
     private DemoApplicationComponent mComponent;
 
-    static public Observable<AlbumItem> albumItemObservableCache;
+    static public Flowable<AlbumItem> albumItemObservableCache;
 
     @Override
     public void onCreate() {
