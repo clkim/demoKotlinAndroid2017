@@ -1,13 +1,14 @@
 Kotlin and Android: Better Together
 ===================================
 
-## Demo app for AnDevCon San Francisco 2016 class
+## Demo app for AnDevCon Washington DC 2017 half-day Tutorial 
 #### Search iTunes for albums (to display, not download)
 
 The app demonstrates Kotlin code working with the popular Java libraries Dagger 2, Retrofit 2 and
-RxJava/RxAndroid.
-
-<img src="DemoAppSreenshot.png" width="240" height="420" />
+RxJava 2/RxAndroid 2.
+<p align="center">
+  <img src="DemoAppSreenshot.png" width="240" height="420" />
+</p>
 
 The no-frills but functional app allows the user to search for albums with the Search icon in the
 action bar, enter a search term such as name of an artist or band, then search with the soft
