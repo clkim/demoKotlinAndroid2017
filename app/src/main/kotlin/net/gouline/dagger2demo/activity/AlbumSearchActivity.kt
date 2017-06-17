@@ -60,8 +60,8 @@ class AlbumSearchActivity : AppCompatActivity(),
     // adapter for recycler view
     private var mAlbumViewAdapter: AlbumViewAdapter? = null
 
-    // composite subscription used to un-subscribe rx subscriptions
-    private var mCompositeSubscription: CompositeDisposable? = null
+    // composite disposable used to dispose rxjava2 disposables (was rxjava1 subscriptions)
+    private var mCompositeDisposable: CompositeDisposable? = null
 
     // object with "static" member property used by Log.x
     companion object {
@@ -83,18 +83,19 @@ class AlbumSearchActivity : AppCompatActivity(),
         this.recycler_view.layoutManager = LinearLayoutManager(this)
 
         // Reference - http://blog.danlew.net/2014/10/08/grokking-rxjava-part-4/
-        // we follow the pattern in above blog reference, although we have just one subscription in
-        //  this demo app and un-subscribing from the subscription directly seemed to work ok too
-        mCompositeSubscription = CompositeDisposable()
+        // we follow the pattern in above blog reference, although we have just one disposable
+        //  (was subscription in rxjava1) in this demo app
+        mCompositeDisposable = CompositeDisposable()
 
-        // if there is observable cached, use it to display album items from prior api call;
-        //  tried checking instead for empty sequence in cached observable using
-        //   DemoApplication.albumItemObservableCache.count().toBlocking().single() != 0
-        //  but it is too slow on orientation change right after starting a search, since it seems
-        //  to block so as to count the items coming into the sequence from the new search; so we
-        //  live with the edge case that displays an empty view if cache is present but empty
-        if (DemoApplication.albumItemObservableCache != null) {
-            displayCachedResults(DemoApplication.albumItemObservableCache)
+        // if there is a Flowable cached, use it to display album items from prior api call;
+        // should it becomes too slow on orientation change right after starting a search, because
+        //  it could block in order to count the items coming into the sequence from the new search,
+        //  then just check for null albumItemFlowableCache, and live with edge case that displays
+        //  an empty view if cache is present but empty
+        val cacheSize =
+                DemoApplication.albumItemFlowableCache?.count()?.blockingGet()?.toLong() ?: 0L
+        if (cacheSize != 0L) {
+            displayCachedResults(DemoApplication.albumItemFlowableCache)
             // hide prompt-textview
             setPromptVisibility(View.GONE)
         }
@@ -134,26 +135,26 @@ class AlbumSearchActivity : AppCompatActivity(),
     }
 
     override fun onDestroy() {
+        mCompositeDisposable?.dispose()
         super.onDestroy()
-        mCompositeSubscription?.dispose()
     }
 
     private fun fetchResults(term: String) {
         // clear the items in recyclerview adapter
         mAlbumViewAdapter?.clear()
-        // cache newly fetched observable
-        DemoApplication.albumItemObservableCache =
+        // cache newly fetched Flowable
+        DemoApplication.albumItemFlowableCache =
                 // using the injected Retrofit service
                 mITunesService.search(term, "album")
                         .flatMap { Flowable.fromIterable(it.results) }
                         .map { AlbumItem(it.collectionName, it.artworkUrl100) }
                         .subscribeOn(Schedulers.io())
                         .cache()
-        displayCachedResults(DemoApplication.albumItemObservableCache)
+        displayCachedResults(DemoApplication.albumItemFlowableCache)
     }
 
     private fun displayCachedResults(cache: Flowable<AlbumItem>) {
-        // subscribe to the observable so as to display the album items
+        // subscribe to the Flowable so as to display the album items
         val subscription: Disposable = cache
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -162,9 +163,9 @@ class AlbumSearchActivity : AppCompatActivity(),
                                   mAlbumViewAdapter?.itemCount?.minus(1) ?: 0)
                         },
                         { Log.w(TAG, "Retrieve albums failed\n" + it.message, it) })
-        // add the subscription to the CompositeSubscription
-        //  so we can do lifecycle un-subscribe
-        mCompositeSubscription?.add(subscription)
+        // add the subscription to the CompositeDisposable
+        //  so we can do lifecycle dispose
+        mCompositeDisposable?.add(subscription)
     }
 
     private fun setPromptVisibility(visibility: Int) {

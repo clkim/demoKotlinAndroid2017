@@ -19,7 +19,7 @@ import io.reactivex.Flowable;
 public class DemoApplication extends Application {
     private DemoApplicationComponent mComponent;
 
-    static public Flowable<AlbumItem> albumItemObservableCache;
+    static public Flowable<AlbumItem> albumItemFlowableCache;
 
     @Override
     public void onCreate() {
