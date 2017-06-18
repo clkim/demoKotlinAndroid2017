@@ -155,7 +155,7 @@ class AlbumSearchActivity : AppCompatActivity(),
 
     private fun displayCachedResults(cache: Flowable<AlbumItem>) {
         // subscribe to the Flowable so as to display the album items
-        val subscription: Disposable = cache
+        val disposable: Disposable = cache
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         { mAlbumViewAdapter?.addAlbumItem(it)
@@ -163,9 +163,9 @@ class AlbumSearchActivity : AppCompatActivity(),
                                   mAlbumViewAdapter?.itemCount?.minus(1) ?: 0)
                         },
                         { Log.w(TAG, "Retrieve albums failed\n" + it.message, it) })
-        // add the subscription to the CompositeDisposable
+        // add the disposable to the CompositeDisposable
         //  so we can do lifecycle dispose
-        mCompositeDisposable?.add(subscription)
+        mCompositeDisposable?.add(disposable)
     }
 
     private fun setPromptVisibility(visibility: Int) {
