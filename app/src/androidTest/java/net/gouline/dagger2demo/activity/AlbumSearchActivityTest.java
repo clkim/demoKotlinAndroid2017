@@ -35,8 +35,9 @@ public class AlbumSearchActivityTest {
 
 
     @Test
-    public void testPreConditions() {
+    public void testViewIsDisplayed() {
         onView(withId(R.id.recycler_view)).check(matches(isDisplayed()));
+
         onView(withId(R.id.empty_view)).check(matches(isDisplayed()));
     }
 
