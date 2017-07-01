@@ -10,7 +10,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
@@ -19,7 +19,6 @@ import kotlinx.android.synthetic.main.activity_album_search.*
 import net.gouline.dagger2demo.DemoApplication
 import net.gouline.dagger2demo.R
 import net.gouline.dagger2demo.rest.ITunesService
-
 import javax.inject.Inject
 
 /**
@@ -87,15 +86,13 @@ class AlbumSearchActivity : AppCompatActivity(),
         //  (was subscription in rxjava1) in this demo app
         mCompositeDisposable = CompositeDisposable()
 
-        // if there is a Flowable cached, use it to display album items from prior api call;
-        // should it becomes too slow on orientation change right after starting a search, because
-        //  it could block in order to count the items coming into the sequence from the new search,
-        //  then just check for null albumItemFlowableCache, and live with edge case that displays
-        //  an empty view if cache is present but empty
-        val cacheSize =
-                DemoApplication.albumItemFlowableCache?.count()?.blockingGet()?.toLong() ?: 0L
-        if (cacheSize != 0L) {
-            displayCachedResults(DemoApplication.albumItemFlowableCache)
+        // if there is an Observable cached, use it to display album items from prior api call;
+        // checking for null cache seems ok instead of checking for zero count, e.g.
+        //   DemoApplication.albumItemObservableCache?.count()?.blockingGet()?.toLong() ?: 0L
+        //  because we're not expiring the cache in the replay() call -- in which case the cache
+        //  is not null but is empty and so we don't want to just display cached results
+        if (DemoApplication.albumItemObservableCache != null) {
+            displayCachedResults(DemoApplication.albumItemObservableCache)
             // hide prompt-textview
             setPromptVisibility(View.GONE)
         }
@@ -135,26 +132,26 @@ class AlbumSearchActivity : AppCompatActivity(),
     }
 
     override fun onDestroy() {
-        mCompositeDisposable?.dispose()
         super.onDestroy()
+        mCompositeDisposable?.dispose()
     }
 
     private fun fetchResults(term: String) {
         // clear the items in recyclerview adapter
         mAlbumViewAdapter?.clear()
-        // cache newly fetched Flowable
-        DemoApplication.albumItemFlowableCache =
+        // cache newly fetched Observable
+        DemoApplication.albumItemObservableCache =
                 // using the injected Retrofit service
                 mITunesService.search(term, "album")
-                        .flatMap { Flowable.fromIterable(it.results) }
-                        .map { AlbumItem(it.collectionName, it.artworkUrl100) }
                         .subscribeOn(Schedulers.io())
-                        .cache()
-        displayCachedResults(DemoApplication.albumItemFlowableCache)
+                        .flatMapIterable { it.results }
+                        .map { AlbumItem(it.collectionName, it.artworkUrl100) }
+                        .replay().autoConnect() // equivalent to operator cache() but seems preferred, ref: https://speakerdeck.com/dlew/common-rxjava-mistakes
+        displayCachedResults(DemoApplication.albumItemObservableCache)
     }
 
-    private fun displayCachedResults(cache: Flowable<AlbumItem>) {
-        // subscribe to the Flowable so as to display the album items
+    private fun displayCachedResults(cache: Observable<AlbumItem>) {
+        // subscribe to the Observable so as to display the album items
         val disposable: Disposable = cache
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
