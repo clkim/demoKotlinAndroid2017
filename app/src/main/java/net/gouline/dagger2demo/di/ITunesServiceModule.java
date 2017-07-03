@@ -1,15 +1,12 @@
-package net.gouline.dagger2demo.di.module;
+package net.gouline.dagger2demo.di;
 
-import net.gouline.dagger2demo.DemoApplication;
 import net.gouline.dagger2demo.rest.ITunesService;
-
-import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.Retrofit;
 
 /**
  * Application-wide dependencies.
@@ -18,16 +15,13 @@ import retrofit2.Retrofit;
  * to the injection targets - that's what components are now for.
  * <p/>
  * Created by mgouline on 23/04/15.
+ * Refactored by clkim to use RxJava.
  */
 @Module
-public class ApplicationModule {
-    //private final DemoApplication mApplication; // seems not needed
-
+public class ITunesServiceModule {
     private ITunesService mITunesService;
 
-    public ApplicationModule() {
-    //public ApplicationModule(DemoApplication application) {
-    //    mApplication = application;
+    public ITunesServiceModule() {
         mITunesService = new Retrofit.Builder()
                 .baseUrl("https://itunes.apple.com/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -36,15 +30,7 @@ public class ApplicationModule {
                 .create(ITunesService.class);
     }
 
-    /* seems not needed
     @Provides
-    @Singleton
-    Context provideApplicationContext() {
-        return mApplication;
-    } */
-
-    @Provides
-    @Singleton
     ITunesService provideITunesService() {
         return mITunesService;
     }

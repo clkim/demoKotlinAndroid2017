@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import dagger.android.AndroidInjection
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -68,12 +69,13 @@ class AlbumSearchActivity : AppCompatActivity(),
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // ref https://google.github.io/dagger/android.html
+        // gets a DispatchingAndroidInjector<Activity> gotten from DemoApplication
+        //  and passes this Activity to inject()
+        AndroidInjection.inject(this)
+        // do that before calling super.onCreate()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_album_search)
-
-        // Actual injection, performed via the component
-        DemoApplication.from(this).component
-                .inject(this)
 
         mAlbumViewAdapter = AlbumViewAdapter()
 
