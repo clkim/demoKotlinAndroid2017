@@ -16,7 +16,7 @@ import dagger.android.support.AndroidSupportInjectionModule;
  *  reference https://google.github.io/dagger/android.html
  */
 @Component(modules = {
-        AndroidSupportInjectionModule.class, DemoActivityModule.class, ITunesServiceModule.class})
+        AndroidSupportInjectionModule.class, AlbumSearchActivityModule.class, ITunesServiceModule.class})
 public interface DemoApplicationComponent {
     void doInject(DemoApplication demoApplication);
 }
