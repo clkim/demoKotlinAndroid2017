@@ -14,7 +14,7 @@ import retrofit2.http.Query;
 public interface ITunesService {
     @GET("search")
     // Use Observable and not Flowable; we don't have a "request-produce" mechanism to support backpressure
-    //  ref: https://artemzin.com/blog/reply-to-kaushik-gopals-aricle-rxjava-1-rxjava-2-understanding-the-changes/?utm_source=Android+Weekly&utm_campaign=db675e4c05-android-weekly-263&utm_medium=email&utm_term=0_4eb677ad19-db675e4c05-338015473
+    //  ref: https://artemzin.com/blog/reply-to-kaushik-gopals-aricle-rxjava-1-rxjava-2-understanding-the-changes
     Observable<ITunesResultSet> search(@Query("term") String term,
                                        @Query("entity") String entity);
 }
