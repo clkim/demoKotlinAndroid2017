@@ -25,7 +25,7 @@ abstract class DemoActivityModule {
             DemoActivitySubcomponent.Builder builder);
 
     // inner interface of class just for convenience
-    @Subcomponent(modules = ITunesServiceModule.class)
+    @Subcomponent
     public interface DemoActivitySubcomponent extends AndroidInjector<AlbumSearchActivity> {
         @Subcomponent.Builder
         abstract class Builder extends AndroidInjector.Builder<AlbumSearchActivity> {} // public, since inner class of interface

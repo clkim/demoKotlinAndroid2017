@@ -15,7 +15,8 @@ import dagger.android.support.AndroidSupportInjectionModule;
  * Major refactoring to use AndroidInjector by clkim on 7/4/2017.
  *  reference https://google.github.io/dagger/android.html
  */
-@Component(modules = {AndroidSupportInjectionModule.class, DemoActivityModule.class})
+@Component(modules = {
+        AndroidSupportInjectionModule.class, DemoActivityModule.class, ITunesServiceModule.class})
 public interface DemoApplicationComponent {
     void doInject(DemoApplication demoApplication);
 }
